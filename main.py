@@ -23,7 +23,7 @@ from optlib import Gibbs
 
 def initial():
     libopt = argparse.ArgumentParser()
-    libopt.add_argument('--M', type=int, default=40, help='total # of devices')
+    libopt.add_argument('--M', type=int, default=40, help='total # of devices')#有m个
     libopt.add_argument('--N', type=int, default=5, help='# of BS antennas')
     libopt.add_argument('--L', type=int, default=40, help='RIS Size')
     
