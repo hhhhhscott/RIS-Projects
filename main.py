@@ -3,6 +3,8 @@ import time
 import copy
 import numpy as np
 np.set_printoptions(precision=6,threshold=1e3)
+#控制输出的小数点个数和数组显示元素个数
+
 #import matplotlib
 #matplotlib.use('Qt5Agg')
 #import matplotlib.pyplot as plt
