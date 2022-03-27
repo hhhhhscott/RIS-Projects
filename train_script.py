@@ -23,7 +23,10 @@ def mnist_iid(dataset, K,M):
         all_idxs = list(set(all_idxs) - dict_users[i])
     return dict_users
 
-def Load_FMNIST_IID(M,K):
+def Load_FMNIST_IID(M,K):#FASHION_MNIST数据集训练集50000张，测试集10000张。M=len(K)，生成了两个大列表（一个是训练图片，一个是训练标签）
+    # len(train_images[m])=K[m] len(train_labels[m])=K[m]
+    # 以及测试集合
+
     
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize(mean=(0.5,), std=(0.5,))
@@ -31,13 +34,13 @@ def Load_FMNIST_IID(M,K):
     dataset_train = datasets.FashionMNIST('./data/FASHION_MNIST/', download = True, train = True, transform = transform)
     dataset_test = datasets.FashionMNIST('./data/FASHION_MNIST/', download = True, train = False, transform = transform)
     
-    loader = DataLoader(dataset_train, batch_size=len(dataset_train), shuffle=False)
-    images, labels = next(enumerate(loader))[1]
+    loader = DataLoader(dataset_train, batch_size=len(dataset_train), shuffle=False)#BGD 每次梯度选用整体数据集
+    images, labels = next(enumerate(loader))[1]#next迭代器，因为enumerate的存在会同时返回 [index, [images,labels]],所以取[1]
     images, labels = images.numpy(), labels.numpy()
     train_images = []
     train_labels = []
     dict_users = {i: np.array([], dtype='int64') for i in range(M)}
-    all_idxs = np.arange(len(labels))
+    all_idxs = np.arange(len(labels))#[0,1,2,...,59999]
     for i in range(M):
         dict_users[i] = set(np.random.choice(all_idxs, int(K[i]), replace=False))
         all_idxs = list(set(all_idxs) - dict_users[i])
@@ -68,7 +71,7 @@ def local_update(libopt,d,model1, train_images, train_labels, idx,batch_size):
     
 #    optimizer = torch.optim.Adam(model.parameters(),lr=libopt.lr)
     epoch_loss = []
-    images = np.array_split(train_images[idx], len(train_images[idx]) // batch_size)
+    images = np.array_split(train_images[idx], len(train_images[idx]) // batch_size)#整数除法 #BGD的切完还是只有一个list，minibatch会切成很多组
     labels = np.array_split(train_labels[idx], len(train_labels[idx]) // batch_size)
     
     for epoch in range(libopt.local_ep):
@@ -91,8 +94,7 @@ def local_update(libopt,d,model1, train_images, train_labels, idx,batch_size):
     copyw=copy.deepcopy(model.state_dict())
     gradient2=np.array([[]]);
     for item in copyw.keys():
-            gradient2=np.hstack((gradient2,np.reshape((initital_weight[item]-copyw[item]).cpu().numpy(),
-                                                    [1,-1])/libopt.lr))
+            gradient2=np.hstack((gradient2,np.reshape((initital_weight[item]-copyw[item]).cpu().numpy(),[1,-1])/libopt.lr))#这个除以学习率的操作很重要，需要记住
 #    print(copyw)
 #    print((gradient2))
     return model.state_dict(),sum(epoch_loss) / len(epoch_loss),gradient2
@@ -120,3 +122,9 @@ def test_model(model,libopt,test_images,test_labels):
         print('Average loss: {:.4f}   Accuracy: {}/{} ({:.2f}%)'.format(
             loss, int(correct), int(total), 100.0*accuracy))
     return accuracy, loss
+
+
+if __name__ == '__main__':
+    M=10
+    K=np.array([1037,163,1908,1072,1767,170,103,1645,1847,1960])
+    train_images,train_labels,test_images,test_labels=Load_FMNIST_IID(M,K)

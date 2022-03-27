@@ -63,14 +63,14 @@ def Learning_iter(libopt,d,net_glob,w_glob,idxs_users,
             #print('Active User: {}'.format(idx))
             #print(len(dict_users[idx]))
             #print(int(libopt.K[idx]))
-            if libopt.local_bs==0:
+            if libopt.local_bs==0:#这个bs决定了是BGD还是mini Batch
                 size=int(libopt.K[idx])
             else:
                 size=min(int(libopt.K[idx]),libopt.local_bs)
                 
             w,loss,gradient=train_script.local_update(libopt,d,copy.deepcopy(net_glob).to(libopt.device),
                                          train_images,train_labels,idx,size)
-        
+            #返回设备idx训练后的权重，本地训练local_ep后的损失以及损失函数对参数的梯度
             
             loss_locals.append(copy.deepcopy(loss))
             copyg=copy.deepcopy(gradient)
@@ -107,7 +107,8 @@ def Learning_iter(libopt,d,net_glob,w_glob,idxs_users,
         loss_test_set.append(loss_test)
         net_glob.train()
     return loss_train,accuracy_test,loss_test_set
-def Learning_iter3(libopt,d,net_glob,w_glob,
+
+def Learning_iter3(libopt,d,net_glob,w_glob,#这个函数是用于时变信道的
               train_images,train_labels,test_images,test_labels,
               x_store,f_store,h_store):
     
@@ -181,6 +182,7 @@ def Learning_iter3(libopt,d,net_glob,w_glob,
         loss_test_set.append(loss_test)
         net_glob.train()
     return loss_train,accuracy_test,loss_test_set
+
 def learning_flow(libopt,Noiseless,Proposed,NoRIS,NoDS,SVD,
                   h_d,G,dic):
     
